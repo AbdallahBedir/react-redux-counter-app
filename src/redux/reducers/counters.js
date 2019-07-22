@@ -8,11 +8,17 @@ const initialState = {
 
 export default function(state = initialState, action) {
   switch (action.type) {
-    case RESET_COUNTERS: {      
+    case RESET_COUNTERS: {  
+      const byIds = {...state.byIds};
+      if(byIds){
+        Object.keys(byIds).forEach(key => {
+          byIds[key].value = 0
+        })
+      }
       return {
         ...state,
-        byIds:resetCounters(state.byIds)
-      };
+        byIds:byIds
+      }    
     }
     case INCREMENT_COUNTER: {
       const { id, newValue } = action.payload;
@@ -41,25 +47,16 @@ export default function(state = initialState, action) {
     }
     case DELETE_COUNTER: {
       const { id } = action.payload;
+      const newState = {...state}; // copy the current state 
+      newState.allIds.splice(newState.allIds.indexOf(id),1); // remove id from allIds or `state.allIds.filter(Id => id !== Id)`
+      const { [id]:value , ...others} = newState.byIds // remove id object from byIds
       return {
         ...state,
-        allIds: state.allIds.filter(Id => id != Id),
-        byIds:deleteCounterById(state.byIds,id)
+        allIds: newState.allIds,
+        byIds:others
       };
     }
     default:
       return state;
   }
-}
-
-function deleteCounterById (ids,id){
-  const { [id]:value , ...others} = ids;
-  return others;
-}
-
-function resetCounters (allIds){  
-  Object.keys(allIds).forEach(key => {
-    allIds[key].value = 0
-  })
-  return allIds;
 }
